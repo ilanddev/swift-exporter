@@ -1,0 +1,36 @@
+ReadReconFile:
+  # module_description: this moudule reads the *.recon file from /var/cache/swift directory, and parse 
+  # data such as replication time, object audit time...etc. Generally speaking, this is the module that
+  # contains data most users will find useful. 
+  - yes
+GrabSwiftPartition:
+  # module_description: this module grab the primary and handoff partitions count in a Swift node. 
+  # Enter "yes" to enable, and "no" to disable.  
+  - yes
+SwiftDiskUsage:
+  # module_description: this module checks Swift nodes and grab information about disk.
+  # Enter "yes" to enable, and "no" to disable.  
+  - yes
+SwiftDriveIO:
+  # module_description: this module pull disk IO stats from all Swift drives (those that are mounted in "/srv/node/d<x>")
+  # and expose them via Prometheus.
+  - yes
+GatherReplicationEstimate: 
+  # module_description: this module will read the latest entry in all.log and search for keyword "replicated", 
+  # then extract the data out and parse for the estimated time complete, and part/sec. Enter "yes" to enable,
+  # and "no" to disable. 
+  - yes
+GatherStoragePolicyUtilization:
+  # module_description: this module grabs the size of each drive that has a storage policy assigned to it,
+  # then expose it to Prometheus. 
+  - yes
+CheckObjectServerConnection:
+  # module_description: this module checks the number of object server spinned. This is useful for replica based storage policy.
+  # The number of object server = number of drives * object server per port setting. 
+  - yes
+ExposePerCPUUsage:
+  # module_description: this module expose cpu usage and expose them in prometheus.
+  - yes
+ExposePerNICMetric:
+  # module_description: this module expose cpu usage and expose them in prometheus.
+  - yes

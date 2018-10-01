@@ -1,0 +1,81 @@
+swift_exporter (0.8.3)
+  * Fixed an issue which the script will crash / unable to start if the node its running on is not a PACO node. 
+
+swift_exporter (0.8.2)
+  * Fixed an issue in swift_exporter running in Ubuntu where it will exit unexpectedly because some of the item in the 
+    swiftsubservices (such as ssswift-object-replication@server", "ssswift-object-replication@reconstructor.service" ...) 
+    are missing in Ubuntu nodes.
+
+swift_exporter (0.8.1)
+  * Fixed an issue in GetSwiftEnvironmentParameters() which will cause swift_exporter to crash when users uses hostname as 
+    their API endpoint instead of IP address. 
+  
+swift_exporter (0.8.0)
+  * Added new feature which allows swift_exporter to expose system status of Swift services such as proxy, account, container,
+    and object server. 
+  * Improved the parsing capability of object.recon in swift_exporter so that it can parse new metrics data available in 
+    Swift 2.18
+  * Improved the parsing capability of container.recon in swift_exporter so that it can expose container sharding metrics. 
+  * Added new feature that expose disk usage in percentage.
+  * Added new feature that expose MTU of each NIC installed.
+
+swift_exporter (0.7.1)
+  * Fixed the log problem which the fmt.Println script floods and pollutes /var/log/messages in the node that the script is 
+    running. This release will forward all the logs from /var/log/messages to /var/log/swift_exporter.log. Since this is not 
+    a complete fix (the complete fix includes a way on enable/disabling verbose mode).
+  * Fixed some of the bugs where swift_exporter is not reading some of the fields in the *.recon files correctly. 
+    In addition, swift_exporter will generate the replication status value based on calculation instead of parsing all.log.
+  * Introduced RunSMARTCTL which runs smartctl on both HDDs and SSDs installed in the node, and expose metrics that are 
+    strong indicators to the health of the drives installed. 
+
+swift_exporter (0.6.0)
+  * Introduced dstat metrics in swift_exporter. 
+  * Added prometheus label to show the running version in prometheus http interface. 
+
+swift_exporter (0.5.5)
+  * Fixed an issue that the GatherReplicationEstimate is grabbing the wrong field in all.log.
+  * Added documentation to all functions in the script.
+
+swift_exporter (0.5.4)
+  * Fixed issue #16 in GitLab
+    Include checks to make sure that if there is a log rotation appears, which yields the output of 
+    "grep replicated /var/log/swift/all.log" empty, set the default value to 0
+  * Added retries entries under [system] section of systemd.
+
+swift_exporter (0.5.3)
+  * Resolved the issue where it only supports 1 storage policy.
+  * Fixed the problem where GatherReplicationEstimate() parsed the wrong field.
+  * Fixed the problem where GatherReplicationEstimate() assumes everything it 
+    parsed for time_remaining field as "s" (seconds) where it can be "m" (minutes) or "h" (hours)
+
+swift_exporter (0.5.2)
+  * Fixed an issue in GatherReplicationEstimate() which causes swift_exporter to crashed during daily log roataion. 
+
+swift_exporter (0.5.1)
+  * Added CheckObjectServerConnection to grab the number of object server instance created.
+  * Fixed bug in issue #14 regarding the storage policy name not being able to be mapped correctly.
+
+swift_exporter (0.4.0)
+  * Added GatherReplicationEstimate() function to do a "grep replicated /var/log/swift/all.log" via the exec.Command() 
+    function in the exec library.
+    Once the script retrieved the output from "grep replicated /var/log/swift/all.log", it will then convert the []byte 
+    slice to a []string slice using the split function. After that, we only extract the last element of the []string 
+    slice and further extract the data we want.
+
+swift_exporter (0.3.0)
+  * Added SwiftDriveIO function that grab and expose disk IO metrics such as ReadCount, WriteCount, ReadBytes,
+    WriteBytes, ReadTime, WriteTime, IopsInProgressm, IoTime, and WeightedIO
+  * Added GatherStoragePolicyUtilization function that grabs the disk space used by each storage policy. Since this feature
+    is IO intensive as it is running "df -h" against "/srv/node/" directory, it will only run in every 6 hours. 
+  * Introduced swift_exporter_config.yaml that allows user to turn each checking feature ON and OFF. 
+
+swift_exporter (0.2.0)
+  * Added CheckSwiftLogSize that pulls the file size of Swift all.log. This feature is running on a separate go 
+    routine for every 3 hours instead of other metics that runs every minute.
+
+swift_exporter (0.1.2)
+  * Added SanityCheckOnFiles function that will check if the needed log / config files exist before pulling the metrics. 
+    If those files do not exist but users enable the module, the function will notify the user about that and then disable 
+    the module.
+
+swift_exporter (0.1.0)

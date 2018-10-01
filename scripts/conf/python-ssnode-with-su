@@ -1,0 +1,104 @@
+# Note: CentOS enables dateext by default, so disable it in these stanzas
+
+/var/log/ssnoded.log {
+    nodateext
+    compress
+    missingok
+    notifempty
+    daily
+    rotate 20
+}
+
+/var/log/ssnode-upgrade.log {
+    nodateext
+    compress
+    missingok
+    notifempty
+    size 200k
+    rotate 2
+}
+
+/var/log/sslogrotate.log {
+    nodateext
+    compress
+    missingok
+    notifempty
+    size 200k
+    rotate 2
+}
+
+/var/log/swift-recon-cron.log {
+    nodateext
+    compress
+    missingok
+    notifempty
+    size 200k
+    rotate 2
+}
+
+/opt/ss/var/log/rsyncd.log {
+    nodateext
+    compress
+    delaycompress
+    missingok
+    notifempty
+    size 200k
+    rotate 5
+}
+
+/var/log/stud.log {
+    nodateext
+    compress
+    delaycompress
+    missingok
+    notifempty
+    size 200k
+    rotate 5
+}
+
+/var/log/ssevents.log {
+    nodateext
+    compress
+    missingok
+    notifempty
+    daily
+    rotate 20
+}
+
+/var/log/*-upstart /var/log/swift/*upstart.log {
+    su root adm
+    nodateext
+    compress
+    copytruncate
+    delaycompress
+    missingok
+    notifempty
+    size 200k
+    rotate 5
+}
+
+/var/log/swift/all.log {
+    su root adm
+    nodateext
+    daily
+    rotate 20
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+            /usr/bin/ssreloadsyslog >/dev/null 2>&1 || true
+            /usr/bin/sslogarchive
+    endscript
+}
+
+/var/log/swift_exporter.log {
+    su root adm
+    nodateext
+    compress
+    daily
+    rotate 5
+    missingok
+    notifempty
+}

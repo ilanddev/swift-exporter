@@ -1,0 +1,12 @@
+# ignore anything under .vscode/ directory as it is used in Visual Studio Code only.
+# ignore anything that used to build the packages, and Docker container. 
+.vscode/*
+
+# ignore Dockerfile that builds the apline image with swift_exporter. 
+Dockerfile
+
+# ignore all the libraries that needed to build the package (for now). 
+# I think we will need it when we do the CD/CI when the compiler needs the libaries to build the package.
+src/github.com
+src/golang.org
+src/gopkg.in

@@ -1,0 +1,14 @@
+[Unit]
+Description=Swift Exporter
+
+[Service]
+User=root
+Restart=always
+RestartSec=30
+StartLimitBurst=3
+
+ExecStart=/opt/ss/support/swift_exporter/bin/swift_exporter /opt/ss/support/swift_exporter/etc/swift_exporter_config.yaml
+
+
+[Install]
+WantedBy=multi-user.target
