@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const ssnodeConfFile = "/etc/ssnode.conf"
+
 type formpostParameter struct {
 }
 
@@ -64,6 +66,7 @@ type tempURLParameter struct {
 	OutgoingRemoveHeaders []string `json:"outgoing_remove_headers"`
 }
 
+// NodeSwiftSetting struct holds the Swift cluster parameter data from the discovery API call to the cluster.
 type NodeSwiftSetting struct {
 	Formpost         formpostParameter       `json:"formpost"`
 	SLO              sloParameter            `json:"slo"`
@@ -78,7 +81,7 @@ type NodeSwiftSetting struct {
 // node parameter of the system. Environment variables like Swift version, S3 version...etc will be expose and
 // reference in other modules in the script.
 func GetSwiftEnvironmentParameters() (swiftEnvironmentParameters NodeSwiftSetting) {
-	apiIP, apiPort, apiHostname := GetAPIAddress()
+	apiIP, apiPort, apiHostname, _ := GetAPIAddress(ssnodeConfFile)
 	var targetEndpoint string
 	var read NodeSwiftSetting
 	var target []string
@@ -117,9 +120,10 @@ func GetSwiftEnvironmentParameters() (swiftEnvironmentParameters NodeSwiftSettin
 	return swiftEnvironmentParameters
 }
 
-func GetAPIAddress() (apiAddress string, apiPort string, apiHostname string) {
+// GetAPIAddress reads the ssnode.conf file and get the API IP, API Port, and API Hostname inside the file.
+func GetAPIAddress(ssnodeConfig string) (apiAddress string, apiPort string, apiHostname string, err error) {
 
-	openFile, err := os.Open("/etc/ssnode.conf")
+	openFile, err := os.Open(ssnodeConfig)
 	if err != nil {
 		fmt.Println("I cannot read this file")
 	}
@@ -138,10 +142,11 @@ func GetAPIAddress() (apiAddress string, apiPort string, apiHostname string) {
 		}
 	}
 
-	return apiAddress, apiPort, apiHostname
+	return apiAddress, apiPort, apiHostname, err
 }
 
-func GetUUIDAndFQDN() (UUID string, FQDN string) {
+// GetUUIDAndFQDN runs "hostname -f" and reads the ssnode.conf to get the full FQDN and the UUID of a Swift node.
+func GetUUIDAndFQDN(ssnodeConfig string) (UUID string, FQDN string, err error) {
 	// to get this module to run, please do he following:
 	// read /etc/ssnode.conf to get the UUID of the node
 	// run hostnamectl to get the FQDN of the node
@@ -149,7 +154,7 @@ func GetUUIDAndFQDN() (UUID string, FQDN string) {
 	var nodeUUID string
 	var hostName string
 
-	openFile, err := os.Open("/etc/ssnode.conf")
+	openFile, err := os.Open(ssnodeConfig)
 
 	if err != nil {
 		fmt.Println("I cannot read this file")
@@ -165,5 +170,5 @@ func GetUUIDAndFQDN() (UUID string, FQDN string) {
 
 	runCommand, _ := exec.Command("hostname", "-f").Output()
 	hostName = strings.TrimRight(string(runCommand), "\n")
-	return hostName, nodeUUID
+	return hostName, nodeUUID, err
 }

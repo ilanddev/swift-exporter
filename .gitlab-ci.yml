@@ -1,0 +1,19 @@
+image: golang:latest
+
+variables:
+  REPO_NAME: gitlab.swiftstack.org/swiftstack/swift_exporter
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - echo $GOPATH
+  - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
+  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
+  - cd $GOPATH/src/$REPO_NAME
+
+stages:
+  - build
+
+build-binary:
+  stage: build
+  script: 
+    - docker run -it 

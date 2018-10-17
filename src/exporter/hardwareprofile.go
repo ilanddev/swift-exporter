@@ -69,7 +69,7 @@ func ExposePerCPUUsage(ExposePerCPUUsageEnable bool) {
 
 	if ExposePerCPUUsageEnable {
 		writeLogFile.Println("ExposeCPUUsage ENABLED")
-		hostFQDN, hostUUID := GetUUIDAndFQDN()
+		hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 
 		PerCPUUsageTime, _ := cpu.Times(true)
 		for i := 0; i < len(PerCPUUsageTime); i++ {
@@ -138,7 +138,7 @@ func ExposePerNICMetric(ExposePerNICMetricEnable bool) {
 		// nicInfo gets the MAC and IP address of each interface available in the node.
 		perNicMetric, _ := net.IOCounters(true)
 		nicInfo, _ := net.Interfaces()
-		hostFQDN, hostUUID := GetUUIDAndFQDN()
+		hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 
 		writeLogFile.Println("ExposePerNICMetric Module ENABLED")
 
@@ -176,9 +176,10 @@ func ExposePerNICMetric(ExposePerNICMetricEnable bool) {
 
 }
 
+// GrabNICMTU grabs the MTU setting of a NIC card by reading the /sys/class/net file.
 func GrabNICMTU() {
 
-	hostFQDN, hostUUID := GetUUIDAndFQDN()
+	hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 	cmd, _ := exec.Command("ls", "/sys/class/net").Output()
 	outputString := strings.Split(string(cmd), "\n")
 	outputString = outputString[:len(outputString)-1]
@@ -248,7 +249,7 @@ func SwiftDriveIO(SwiftDriveIOEnable bool) {
 
 		swiftDrive, _ := disk.Partitions(false)
 		swiftDiskIO, _ := disk.IOCounters()
-		nodeHostname, nodeUUID := GetUUIDAndFQDN()
+		nodeHostname, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 
 		for i := 0; i < len(swiftDrive); i++ {
 			if strings.Contains(swiftDrive[i].Mountpoint, "/srv/node") {
