@@ -25,6 +25,7 @@ const replicationProgressFile = "/opt/ss/var/lib/replication_progress.json"
 const swiftConfig = "/etc/swift/swift.conf"
 const swiftLog = "/var/log/swift/all.log"
 
+// ModulesOnOff holds the on / off settings from the swift_exporter.yml file.
 type ModulesOnOff struct {
 	CheckObjectServerConnectionEnable    bool
 	GrabSwiftPartitionEnable             bool
