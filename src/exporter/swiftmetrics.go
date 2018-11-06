@@ -23,9 +23,9 @@ const objectReconFile = "/var/cache/swift/object.recon"
 const replicationProgressFile = "/opt/ss/var/lib/replication_progress.json"
 const swiftConfig = "/etc/swift/swift.conf"
 
-// AccountContainerSwiftRole defines the data structure for account role in Swift cluster.
+// AccountContainerSwiftRole defines the data structure for account role in Swift cluster
 // This is also needed as unmarshal requires the exact name in the JSON object for it
-// to work.
+// to work"
 type AccountSwiftRole struct {
 	AccountReplicator   ReplicationStats `json:"replication_stats"`
 	AccountAuditsPassed float64          `json:"account_audits_passed"`
@@ -45,6 +45,7 @@ type ContainerSwiftRole struct {
 	ShardingStats                 ContainerShardingStats `json:"sharding_stats"`
 }
 
+// ContainerShardingStats struct holds the data read the container sharding from ReadConfFile.
 type ContainerShardingStats struct {
 	Attempted   float64         `json:"attempted"`
 	Deferred    float64         `json:"deffered"`
@@ -60,6 +61,7 @@ type ContainerShardingStats struct {
 	Sharding    ShardingElement `json:"sharding"`
 }
 
+// ContainerShardingStats struct holds the sub set of data read the container sharding from ReadConfFile.
 type ShardingElement struct {
 	AuditRoot          ShardingStats `json:"audit_root"`
 	AuditShard         ShardingStats `json:"audit_shard"`
@@ -71,6 +73,7 @@ type ShardingElement struct {
 	Visited            ShardingStats `json:"visitred"`
 }
 
+// ShardingStats holds subset of data from ShardingElement.
 type ShardingStats struct {
 	Attempted float64 `json:"attempted"`
 	Success   float64 `json:"success"`
@@ -127,12 +130,14 @@ type ReplicationStats struct {
 	StartTime       float64 `json:"start"`
 }
 
+// ReplicationPerDisk struct holds the data obtained from object replication worker in object.json file.
 type ReplicationPerDisk struct {
 	ObjectReplicationLast float64             `json:"replication_last"`
 	ObjectReplicatorStats Replication216Stats `json:"replication_stats"`
 	ReplicationTime       float64             `json:"replication_time"`
 }
 
+// Replication216Stats struct holds the Swift replication status data prior to v2.16
 type Replication216Stats struct {
 	Attempted   float64 `json:"attempted"`
 	Failure     float64 `json:"failure"`
@@ -296,7 +301,7 @@ func GatherStoragePolicyCommonName() map[string]string {
 func ReadReconFile(ReconFile string, SwiftRole string, ReadReconFileEnable bool) {
 
 	writeLogFile := log.New(swiftExporterLog, "ReadReconFile: ", log.Ldate|log.Ltime|log.Lshortfile)
-	hostFQDN, hostUUID := GetUUIDAndFQDN()
+	hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 	swiftParameter := GetSwiftEnvironmentParameters()
 	swiftVersion := strings.Split(swiftParameter.Swift.Version, ".")
 	swiftMajorVersion, _ := strconv.ParseInt(swiftVersion[0], 10, 64)
@@ -499,7 +504,7 @@ func ReadReconFile(ReconFile string, SwiftRole string, ReadReconFileEnable bool)
 func GrabSwiftPartition(replicationProgressFile string, GrabSwiftPartitionEnable bool) {
 
 	writeLogFile := log.New(swiftExporterLog, "GrabSwiftPartition: ", log.Ldate|log.Ltime|log.Lshortfile)
-	nodeHostname, nodeUUID := GetUUIDAndFQDN() // getting node FQDN and UUID
+	nodeHostname, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile) // getting node FQDN and UUID
 
 	if GrabSwiftPartitionEnable {
 		writeLogFile.Println("GrabSwiftPartition Module ENABLED")
@@ -570,7 +575,7 @@ func CheckSwiftLogSize(swiftLog string) {
 
 	fileInfo, err := swiftLogFileHandle.Stat()
 	swiftLogFileSize.Set(float64(fileInfo.Size()))
-	writeLogFile.Println("Swift all.log Size: %f", float64(fileInfo.Size()))
+	writeLogFile.Printf("Swift all.log Size: %f", float64(fileInfo.Size()))
 }
 
 // GatherStoragePolicyUtilization do a "du -s" across all Swift nodes ("/srv/node") and expose
@@ -582,7 +587,7 @@ func GatherStoragePolicyUtilization(GatherStoragePolicyUtilizationEnable bool) {
 	if GatherStoragePolicyUtilizationEnable {
 		writeLogFile.Println("GatherStoragePolicyUtilization Module ENABLED")
 		storagePolicyNameList := GatherStoragePolicyCommonName()
-		hostFQDN, hostUUID := GetUUIDAndFQDN()
+		hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 		var storagePolicyName string
 
 		// disk.Partition is from gopsutil library and it returns a structure of
@@ -636,6 +641,7 @@ func GatherStoragePolicyUtilization(GatherStoragePolicyUtilizationEnable bool) {
 
 }
 
+// CountFilesPerSwiftDrive counts the number of file in each Swift partition in a Swift Drive.
 func CountFilesPerSwiftDrive() {
 	var accountsDB []string
 	var accountsPendingDB []string
@@ -644,7 +650,7 @@ func CountFilesPerSwiftDrive() {
 	var objectFiles []string
 	swiftDrivesRoot := "/srv/node/"
 
-	nodeHostname, nodeUUID := GetUUIDAndFQDN() // getting node FQDN and UUID
+	nodeHostname, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile) // getting node FQDN and UUID
 
 	err := filepath.Walk(swiftDrivesRoot, func(path string, info os.FileInfo, err error) error {
 		if strings.Contains(path, "accounts") {
@@ -676,8 +682,9 @@ func CountFilesPerSwiftDrive() {
 	objectFileCount.WithLabelValues(nodeHostname, nodeUUID).Set(float64(len(objectFiles)))
 }
 
+// CheckSwiftService is a service check on all Swift / Swift-related services running in a node.
 func CheckSwiftService() {
-	nodeHostname, nodeUUID := GetUUIDAndFQDN() // getting node FQDN and UUID
+	nodeHostname, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile) // getting node FQDN and UUID
 	swiftServices := [4]string{"ssswift-proxy", "ssswift-account@server", "ssswift-container@server", "ssswift-object@server"}
 	swiftSubServices := [14]string{"ssswift-object-replication@server", "ssswift-object-replication@reconstructor.service",
 		"ssswift-object-replication@replicator", "ssswift-object@updater", "ssswift-object@auditor", "ssswift-container-replication@sharder",

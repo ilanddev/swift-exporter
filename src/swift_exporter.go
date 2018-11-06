@@ -25,6 +25,7 @@ const replicationProgressFile = "/opt/ss/var/lib/replication_progress.json"
 const swiftConfig = "/etc/swift/swift.conf"
 const swiftLog = "/var/log/swift/all.log"
 
+// ModulesOnOff holds the on / off settings from the swift_exporter.yml file.
 type ModulesOnOff struct {
 	CheckObjectServerConnectionEnable    bool
 	GrabSwiftPartitionEnable             bool
@@ -44,13 +45,13 @@ In addition, accountServer, containerServer, and objectServer initializes gauge-
 metrics data.
 */
 var (
-	scriptVersion                           = "0.8.4"
+	scriptVersion                           = "0.8.5"
 	timeLastRun                             = "00:00:00"
 	swiftExporterLog, swiftExporterLogError = os.OpenFile("/var/log/swift_exporter.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	addr                                    = flag.String("listen-address", ":53167", "The addres to listen on for HTTP requests.")
 	abScriptVersionPara                     = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "ac_script_version",
-		Help: "swift_exporter version 0.8.4",
+		Help: "swift_exporter version 0.8.5",
 	}, []string{"script_version"})
 
 	defaultConfig = map[string]bool{

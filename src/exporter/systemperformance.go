@@ -77,12 +77,10 @@ func CheckObjectServerConnection(CheckObjectServerConnectionEnable bool) {
 
 }
 
-/* RunSMARTCTL module run "smartctl -A <device_label" to get the "reallocated sectors" and
-   offline uncorrectable count that serve as an indicator to see if a drive is failing.
-
-   Unlike other modules that can be turned on/off, this module runs all the time as drives
-   health is important in the Swift cluster.
-*/
+// RunSMARTCTL module run "smartctl -A <device_label" to get the "reallocated sectors" and
+// offline uncorrectable count that serve as an indicator to see if a drive is failing.
+// Unlike other modules that can be turned on/off, this module runs all the time as drives
+// health is important in the Swift cluster."
 func RunSMARTCTL() {
 	var reallocationSectorsCount float64
 	var offlineUncorrectableCount float64
@@ -91,7 +89,7 @@ func RunSMARTCTL() {
 
 	fmt.Println("Staring RunSMARTCTL Module...")
 	// get the FQDN and UUID of the node as part tag used when exposing the data out to prometheus.
-	nodeFQDN, nodeUUID := GetUUIDAndFQDN()
+	nodeFQDN, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 	// grabbing the device list from the node using the disk library in gopsutil library.
 	grabNodeDeviceList, _ := disk.Partitions(false)
 

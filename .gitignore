@@ -10,3 +10,12 @@ Dockerfile
 src/github.com
 src/golang.org
 src/gopkg.in
+
+# ignore pkg because its part of the visual studio code. 
+pkg/*
+
+#ignore anything under bin/ in the workspace
+bin/*
+
+#ignore the generated binary file as well...
+src/swift_exporter
