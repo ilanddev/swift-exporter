@@ -679,7 +679,7 @@ func CountFilesPerSwiftDrive() {
 func CheckSwiftService() {
 	nodeHostname, nodeUUID := GetUUIDAndFQDN() // getting node FQDN and UUID
 	swiftServices := [4]string{"ssswift-proxy", "ssswift-account@server", "ssswift-container@server", "ssswift-object@server"}
-	swiftSubServices := []string{"ssswift-object-replication@server", "ssswift-object-replication@reconstructor.service",
+	swiftSubServices := [14]string{"ssswift-object-replication@server", "ssswift-object-replication@reconstructor.service",
 		"ssswift-object-replication@replicator", "ssswift-object@updater", "ssswift-object@auditor", "ssswift-container-replication@sharder",
 		"ssswift-container-replication@replicator", "ssswift-container-replication@server", "ssswift-container@updater", "ssswift-container@auditor",
 		"ssswift-account-replication@replicator", "ssswift-account-replication@server", "ssswift-account@reaper", "ssswift-account@auditor"}
