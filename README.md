@@ -10,4 +10,4 @@ After getting both files, place them at the following locations:
 1. swift_exporter = `/opt/ss/support/bin/`
 2. swift_exporter.service = `/usr/lib/systemd/system`
 
-If, for any reason, you need to change the location of where these files are placed, please modify the **swift_exporter.service** file accordingly. 
+The path for the `swift_exporter` binary assumes an installation on a SwiftStack Swift node. If you're not running SwiftStack, you can modify the path to `/usr/local/bin/` or any other location you prefer. If you do, please also remember to modify the **swift_exporter.service** file accordingly. 
