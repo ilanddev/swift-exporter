@@ -18,4 +18,7 @@ pkg/*
 bin/*
 
 #ignore the generated binary file as well...
-src/swift_exporter
+swift_exporter
+
+# ignore idea configuration
+.idea
