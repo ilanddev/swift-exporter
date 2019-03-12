@@ -20,7 +20,6 @@ import (
 // Config holds the configuration settings from the swift_exporter.yml file.
 type Config struct {
 	CheckObjectServerConnectionEnable    bool   `yaml:"CheckObjectServerConnection"`
-	GrabSwiftPartitionEnable             bool   `yaml:"GrabSwiftPartition"`
 	GatherReplicationEstimateEnable      bool   `yaml:"GatherReplicationEstimate"`
 	GatherStoragePolicyUtilizationEnable bool   `yaml:"GatherStoragePolicyUtilization"`
 	ExposePerCPUUsageEnable              bool   `yaml:"ExposePerCPUUsage"`
@@ -28,6 +27,7 @@ type Config struct {
 	ReadReconFileEnable                  bool   `yaml:"ReadReconFile"`
 	SwiftDiskUsageEnable                 bool   `yaml:"SwiftDiskUsage"`
 	SwiftDriveIOEnable                   bool   `yaml:"SwiftDriveIO"`
+	SwiftVersion		             string `yaml:"SwiftVersion"`
 	SwiftLogFile                         string `yaml:"SwiftLogFile"`
 	SwiftConfigFile                      string `yaml:"SwiftConfigFile"`
 	ReplicationProgressFile              string `yaml:"ReplicationProgressFile"`
@@ -54,7 +54,6 @@ var (
 
 	config = Config{
 		ReadReconFileEnable:                  true,
-		GrabSwiftPartitionEnable:             true,
 		SwiftDiskUsageEnable:                 true,
 		SwiftDriveIOEnable:                   true,
 		GatherReplicationEstimateEnable:      true,
@@ -62,6 +61,7 @@ var (
 		CheckObjectServerConnectionEnable:    true,
 		ExposePerCPUUsageEnable:              true,
 		ExposePerNICMetricEnable:             true,
+		SwiftVersion:			      "0.0",
 		SwiftLogFile:                         "/var/log/swift/all.log",
 		SwiftConfigFile:                      "/etc/swift/swift.conf",
 		ReplicationProgressFile:              "/opt/ss/var/lib/replication_progress.json",
@@ -121,20 +121,6 @@ func SanityCheckOnFiles() {
 		} else {
 			writeLogFile.Println("ReadReconFile module is disabled. Skip this check.")
 			writeLogFile.Println()
-		}
-		if config.GrabSwiftPartitionEnable {
-			writeLogFile.Printf("Script is set to expose data collected from %s (GrabSwiftPartition module enable). Check to see if that file exist...\n", config.ReplicationProgressFile)
-			if _, err := os.Stat(config.ReplicationProgressFile); err == nil {
-				log.Printf("===> %s exists. Check for this module has completed. Enable the module...\n", config.ReplicationProgressFile)
-				config.GrabSwiftPartitionEnable = true
-				writeLogFile.Println()
-			} else {
-				writeLogFile.Printf("===> %s does not exists, but you have enabled it. Disable the module...\n", config.ReplicationProgressFile)
-				config.GrabSwiftPartitionEnable = false
-				writeLogFile.Println()
-			}
-		} else {
-			writeLogFile.Println("GrabSwiftPartition module is disabled. Skip this check.")
 		}
 		if config.GatherReplicationEstimateEnable {
 			writeLogFile.Printf("Script is set to expose data collected from %s (GatherReplicationEstimate module enable). Check to see if that file exist...\n", config.SwiftLogFile)
@@ -227,30 +213,19 @@ func main() {
 	// Reference2: https://github.com/prometheus/client_golang/blob/master/examples/random/main.go
 	go func() {
 		for {
-			exporter.ReadReconFile(config.AccountReconFile, "account", config.ReadReconFileEnable)
-			exporter.ReadReconFile(config.ContainerReconFile, "container", config.ReadReconFileEnable)
-			exporter.ReadReconFile(config.ObjectReconFile, "object", config.ReadReconFileEnable)
-			exporter.GrabSwiftPartition(config.ReplicationProgressFile, config.GrabSwiftPartitionEnable)
+			exporter.ReadReconFile(config.AccountReconFile, "account", config.ReadReconFileEnable, config.SwiftVersion)
+			exporter.ReadReconFile(config.ContainerReconFile, "container", config.ReadReconFileEnable, config.SwiftVersion)
+			exporter.ReadReconFile(config.ObjectReconFile, "object", config.ReadReconFileEnable, config.SwiftVersion)
 			exporter.SwiftDiskUsage(config.SwiftDiskUsageEnable)
 			exporter.SwiftDriveIO(config.SwiftDriveIOEnable)
 			exporter.CheckObjectServerConnection(config.CheckObjectServerConnectionEnable)
 			exporter.ExposePerCPUUsage(config.ExposePerCPUUsageEnable)
 			exporter.ExposePerNICMetric(config.ExposePerNICMetricEnable)
-			exporter.GrabNICMTU()
 
 			// Setting time to sleep for 1 Minute. If you need to set it to milliseconds, change the
 			// "time.Minute" to "time.Millisecond"
 			// Reference: https://golang.org/pkg/time/#Sleep
 			time.Sleep(1 * time.Minute)
-		}
-	}()
-
-	// the following go routine will be run every 5 minutes
-	go func() {
-		for {
-			//GatherReplicationEstimate(swiftLog, timeLastRun, SelectedModule.GatherReplicationEstimateEnable)
-			exporter.CheckSwiftService()
-			time.Sleep(5 * time.Minute)
 		}
 	}()
 

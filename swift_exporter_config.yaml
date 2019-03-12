@@ -2,9 +2,6 @@
 # data such as replication time, object audit time...etc. Generally speaking, this is the module that
 # contains data most users will find useful.
 ReadReconFile: yes
-# module_description: this module grab the primary and handoff partitions count in a Swift node.
-# Enter "yes" to enable, and "no" to disable.
-GrabSwiftPartition: yes
 # module_description: this module checks Swift nodes and grab information about disk.
 # Enter "yes" to enable, and "no" to disable.
 SwiftDiskUsage: yes
@@ -17,17 +14,22 @@ SwiftDriveIO: yes
 GatherReplicationEstimate: yes
 # module_description: this module grabs the size of each drive that has a storage policy assigned to it,
 # then expose it to Prometheus.
-GatherStoragePolicyUtilization: yes
+#GatherStoragePolicyUtilization: yes
+GatherStoragePolicyUtilization: no
 # module_description: this module checks the number of object server spinned. This is useful for replica based storage policy.
 # The number of object server = number of drives * object server per port setting.
 CheckObjectServerConnection: yes
 # module_description: this module expose cpu usage and expose them in prometheus.
-ExposePerCPUUsage: yes
+#ExposePerCPUUsage: yes
+ExposePerCPUUsage: no
 # module_description: this module expose cpu usage and expose them in prometheus.
-ExposePerNICMetric: yes
-SwiftLogFile: "/var/log/swift/all.log"
+#ExposePerNICMetric: yes
+ExposePerNICMetric: no
+SwiftVersion: "2.15.1"
+SwiftLogFile: "/var/log/swift/swift.log"
 SwiftConfigFile: "/etc/swift/swift.conf"
-ReplicationProgressFile: "/opt/ss/var/lib/replication_progress.json"
+#ReplicationProgressFile: "/var/log/swift/swift_exporter_replication_progress.json"
 ObjectReconFile: "/var/cache/swift/object.recon"
 ContainerReconFile: "/var/cache/swift/container.recon"
 AccountReconFile: "/var/cache/swift/account.recon"
+

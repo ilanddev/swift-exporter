@@ -2,7 +2,7 @@ package exporter
 
 import (
 	"fmt"
-	"log"
+//	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -48,14 +48,14 @@ func init() {
 // instance that is being run.
 func CheckObjectServerConnection(CheckObjectServerConnectionEnable bool) {
 
-	writeLogFile := log.New(swiftExporterLog, "CheckObjectServerConnection: ", log.Ldate|log.Ltime|log.Lshortfile)
+	//writeLogFile := log.New(swiftExporterLog, "CheckObjectServerConnection: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	if CheckObjectServerConnectionEnable {
 		// Get all running processes in the node
 		runningProcess, _ := process.Pids()
 		counter := 0
-		numberOfRunningProcess := len(runningProcess)
-		writeLogFile.Println(numberOfRunningProcess)
+		//numberOfRunningProcess := len(runningProcess)
+		//writeLogFile.Println(numberOfRunningProcess)
 
 		// For each running process, check to see if there is an opened network connection
 		for i := 0; i < len(runningProcess); i++ {
@@ -66,13 +66,13 @@ func CheckObjectServerConnection(CheckObjectServerConnectionEnable bool) {
 			} else {
 				if processConnected[0].Laddr.Port == uint32(6000) {
 					counter++
-					writeLogFile.Println(processConnected)
+					//writeLogFile.Println(processConnected)
 				}
 			}
 		}
 		swiftObjectServerConnection.Set(float64(counter) - 1)
 	} else {
-		writeLogFile.Println("CheckObjectServerConnection Module DISABLED")
+		//writeLogFile.Println("CheckObjectServerConnection Module DISABLED")
 	}
 
 }
@@ -88,8 +88,6 @@ func RunSMARTCTL() {
 	var mediaWearoutIndicator float64
 
 	fmt.Println("Staring RunSMARTCTL Module...")
-	// get the FQDN and UUID of the node as part tag used when exposing the data out to prometheus.
-	nodeFQDN, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 	// grabbing the device list from the node using the disk library in gopsutil library.
 	grabNodeDeviceList, _ := disk.Partitions(false)
 
@@ -97,11 +95,12 @@ func RunSMARTCTL() {
 	for i := 0; i < len(grabNodeDeviceList); i++ {
 		driveList := grabNodeDeviceList[i].Device // get device list
 		swiftDriveType := HddOrSSD(driveList)     // find out whether the drive is a HDD or SSD
-		fmt.Println(driveList)
+// we need to clean up all output in this software, and enable flags for verbosity
+		//fmt.Println(driveList)
 		smartctlExist, smartctlDoesNotExist := exec.Command("which", "smartctl").Output()
 		smartctlLocation := string(smartctlExist)
 
-		fmt.Println("Checking to see if RunSMARTCTL exist...")
+		//fmt.Println("Checking to see if RunSMARTCTL exist...")
 		if smartctlDoesNotExist != nil {
 			// if exec.Command returns error, that is either binary is not available / there is something wrong with the binary,
 			// print the error message out.
@@ -109,7 +108,7 @@ func RunSMARTCTL() {
 			break
 		}
 
-		fmt.Println("smartctl exists...Running smartctl command to grab SMART data...")
+		//fmt.Println("smartctl exists...Running smartctl command to grab SMART data...")
 		runCommand, _ := exec.Command(smartctlLocation, "-A", driveList).Output() // run "smartctl -A <device_label>" command
 
 		// if exec.Command returns good result, reformat the output to expose them out in prometheus.
@@ -121,14 +120,14 @@ func RunSMARTCTL() {
 				if strings.Contains(output[j], "Reallocated_Sector_Ct") {
 					parseOutput := strings.Split(output[j], " ")
 					reallocationSectorsCount, _ = strconv.ParseFloat(string(parseOutput[len(parseOutput)-1]), 64)
-					swiftDriveReallocatedSectorCount.WithLabelValues(swiftDriveType, nodeFQDN, nodeUUID).Set(reallocationSectorsCount)
+					swiftDriveReallocatedSectorCount.WithLabelValues(swiftDriveType).Set(reallocationSectorsCount)
 				} else if strings.Contains(output[j], "Offline_Uncorrectable") {
 					parseOutput := strings.Split(output[j], " ")
 					offlineUncorrectableCount, _ = strconv.ParseFloat(string(parseOutput[len(parseOutput)-1]), 64)
-					swiftDriveOfflineUncorrectableCount.WithLabelValues(swiftDriveType, nodeFQDN, nodeUUID).Set(offlineUncorrectableCount)
+					swiftDriveOfflineUncorrectableCount.WithLabelValues(swiftDriveType).Set(offlineUncorrectableCount)
 				} else {
-					fmt.Println(output)
-					fmt.Println("False")
+					//fmt.Println(output)
+					//fmt.Println("False")
 				}
 			}
 		} else if strings.Compare(swiftDriveType, "SSD") == 0 {
@@ -141,7 +140,7 @@ func RunSMARTCTL() {
 						if strings.Contains(output[j], "Wear Leveling Count") {
 							parseOutput := strings.Split(output[j], " ")
 							wearLevelingCount, _ = strconv.ParseFloat(string(parseOutput[len(parseOutput)-1]), 64)
-							swiftDriveWearLevelingCount.WithLabelValues(driveList, swiftDriveType, nodeFQDN, nodeUUID).Set(wearLevelingCount)
+							swiftDriveWearLevelingCount.WithLabelValues(driveList, swiftDriveType).Set(wearLevelingCount)
 						}
 					}
 				} else if strings.Contains(manufactureOutput[k], "Intel") {
@@ -149,7 +148,7 @@ func RunSMARTCTL() {
 						if strings.Contains(output[j], "Media Wearout Indicator") {
 							parseOutput := strings.Split(output[j], " ")
 							mediaWearoutIndicator, _ = strconv.ParseFloat(string(parseOutput[3]), 64)
-							swiftDriveMediaWearoutIndicatorCount.WithLabelValues(driveList, swiftDriveType, nodeFQDN, nodeUUID).Set(mediaWearoutIndicator)
+							swiftDriveMediaWearoutIndicatorCount.WithLabelValues(driveList, swiftDriveType).Set(mediaWearoutIndicator)
 						}
 					}
 				}

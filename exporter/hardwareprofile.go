@@ -1,9 +1,9 @@
 package exporter
 
 import (
-	"fmt"
+//	"fmt"
 	"io/ioutil"
-	"log"
+//	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -20,15 +20,15 @@ var (
 	individualCPUStatValue                  = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cpu_stat",
 		Help: "CPU Stat - the data exposed here is in percentage (with 1 = 100%).",
-	}, []string{"cpu_name", "metrics_name", "FQDN", "UUID"})
+	}, []string{"cpu_name", "metrics_name"})
 	nicMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "nic_stat",
 		Help: "NIC Stat - 'byte_*' metrics is measured in bytes. While 'pckt_*' and 'err_*' are measured in packet counts.",
-	}, []string{"nic_name", "mac_address", "metrics_name", "FQDN", "UUID"})
+	}, []string{"nic_name", "mac_address", "metrics_name"})
 	nicMTU = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "nic_mtu",
 		Help: "NIC MTU Reading",
-	}, []string{"nic_name", "FQDN", "UUID"})
+	}, []string{"nic_name"})
 	swiftDriveUsage = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "swift_drive_usage",
 		Help: "Swift Drive Usage in bytes (B)",
@@ -44,11 +44,11 @@ var (
 	swiftDriveIOStat = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "swift_drive_io_stat",
 		Help: "swift_drive_io_stat expose drive io-related data to prometheus measures in Bytes (B).",
-	}, []string{"swift_drive", "metric_name", "drive_type", "FQDN", "UUID"})
+	}, []string{"swift_drive", "metric_name", "drive_type"})
 	swiftStoragePolicyUsage = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "swift_storage_policy_usage",
 		Help: "Utilization Per Storage Policy. This metrics will be fetched every 6 hours instead of minutes",
-	}, []string{"swift_drive_mountpoint", "swift_drive_label", "storage_policy_name", "FQDN", "UUID"})
+	}, []string{"swift_drive_mountpoint", "swift_drive_label", "storage_policy_name"})
 )
 
 func init() {
@@ -65,11 +65,10 @@ func init() {
 // and convert them into percentage (out of 1), and expose them out to prometheus.
 func ExposePerCPUUsage(ExposePerCPUUsageEnable bool) {
 
-	writeLogFile := log.New(swiftExporterLog, "ExposePerCPUUsage: ", log.Ldate|log.Ltime|log.Lshortfile)
+	//writeLogFile := log.New(swiftExporterLog, "ExposePerCPUUsage: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	if ExposePerCPUUsageEnable {
-		writeLogFile.Println("ExposeCPUUsage ENABLED")
-		hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
+		//writeLogFile.Println("ExposeCPUUsage ENABLED")
 
 		PerCPUUsageTime, _ := cpu.Times(true)
 		for i := 0; i < len(PerCPUUsageTime); i++ {
@@ -105,23 +104,23 @@ func ExposePerCPUUsage(ExposePerCPUUsageEnable bool) {
 			stolenValue := cpuStolenTime / totalTimeUsed
 
 			//expose the metrics out to prometheus
-			individualCPUStatValue.WithLabelValues(cpuName, "usr", hostFQDN, hostUUID).Set(usrValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "sys", hostFQDN, hostUUID).Set(sysValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "idle", hostFQDN, hostUUID).Set(idleValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "nice", hostFQDN, hostUUID).Set(niceValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "iowait", hostFQDN, hostUUID).Set(iowaitValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "irq", hostFQDN, hostUUID).Set(irqValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "softirq", hostFQDN, hostUUID).Set(softirqValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "steal", hostFQDN, hostUUID).Set(stealValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "guest", hostFQDN, hostUUID).Set(guestValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "guestnice", hostFQDN, hostUUID).Set(guestniceValue)
-			individualCPUStatValue.WithLabelValues(cpuName, "stolen", hostFQDN, hostUUID).Set(stolenValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "usr").Set(usrValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "sys").Set(sysValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "idle").Set(idleValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "nice").Set(niceValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "iowait").Set(iowaitValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "irq").Set(irqValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "softirq").Set(softirqValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "steal").Set(stealValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "guest").Set(guestValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "guestnice").Set(guestniceValue)
+			individualCPUStatValue.WithLabelValues(cpuName, "stolen").Set(stolenValue)
 
 			//for each metrcis, do the percentage calculate.
 		}
 	} else {
-		writeLogFile.Println("ExposeCPUUsage Disabled")
-		writeLogFile.Println()
+		//writeLogFile.Println("ExposeCPUUsage Disabled")
+		//writeLogFile.Println()
 	}
 }
 
@@ -131,16 +130,15 @@ func ExposePerCPUUsage(ExposePerCPUUsageEnable bool) {
 // prometheus.
 func ExposePerNICMetric(ExposePerNICMetricEnable bool) {
 
-	writeLogFile := log.New(swiftExporterLog, "ExposePerNICMetric: ", log.Ldate|log.Ltime|log.Lshortfile)
+	//writeLogFile := log.New(swiftExporterLog, "ExposePerNICMetric: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	if ExposePerNICMetricEnable {
 		// perNicMetric get the IO counts of each interface available in the node.
 		// nicInfo gets the MAC and IP address of each interface available in the node.
 		perNicMetric, _ := net.IOCounters(true)
 		nicInfo, _ := net.Interfaces()
-		hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 
-		writeLogFile.Println("ExposePerNICMetric Module ENABLED")
+		//writeLogFile.Println("ExposePerNICMetric Module ENABLED")
 
 		for i := 0; i < len(perNicMetric); i++ {
 			var nicName string
@@ -161,17 +159,17 @@ func ExposePerNICMetric(ExposePerNICMetricEnable bool) {
 			nicErrIn := perNicMetric[i].Errin
 			nicErrOut := perNicMetric[i].Errout
 
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "byte_sent", hostFQDN, hostUUID).Set(float64(nicByteSent))
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "byte_recv", hostFQDN, hostUUID).Set(float64(nicByteRecv))
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "pckt_sent", hostFQDN, hostUUID).Set(float64(nicPcktSent))
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "pckt_recv", hostFQDN, hostUUID).Set(float64(nicPcktRecv))
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "err_in", hostFQDN, hostUUID).Set(float64(nicErrIn))
-			nicMetric.WithLabelValues(nicName, nicMACAddr, "err_out", hostFQDN, hostUUID).Set(float64(nicErrOut))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "byte_sent").Set(float64(nicByteSent))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "byte_recv").Set(float64(nicByteRecv))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "pckt_sent").Set(float64(nicPcktSent))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "pckt_recv").Set(float64(nicPcktRecv))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "err_in").Set(float64(nicErrIn))
+			nicMetric.WithLabelValues(nicName, nicMACAddr, "err_out").Set(float64(nicErrOut))
 		}
 
 	} else {
-		writeLogFile.Println("ExposePerNICMetric Disabled")
-		writeLogFile.Println()
+		//writeLogFile.Println("ExposePerNICMetric Disabled")
+		//writeLogFile.Println()
 	}
 
 }
@@ -179,7 +177,6 @@ func ExposePerNICMetric(ExposePerNICMetricEnable bool) {
 // GrabNICMTU grabs the MTU setting of a NIC card by reading the /sys/class/net file.
 func GrabNICMTU() {
 
-	hostFQDN, hostUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 	cmd, _ := exec.Command("ls", "/sys/class/net").Output()
 	outputString := strings.Split(string(cmd), "\n")
 	outputString = outputString[:len(outputString)-1]
@@ -199,7 +196,7 @@ func GrabNICMTU() {
 
 		getMTU, _ := exec.Command("cat", targetLocation).Output()
 		mtu, _ := strconv.ParseFloat(string(getMTU[:len(getMTU)-1]), 64)
-		nicMTU.WithLabelValues(outputString[i], hostFQDN, hostUUID).Set(mtu)
+		nicMTU.WithLabelValues(outputString[i]).Set(mtu)
 	}
 
 }
@@ -209,10 +206,10 @@ func GrabNICMTU() {
 // them via Prometheus.
 func SwiftDiskUsage(SwiftDiskUsageEnable bool) {
 
-	writeLogFile := log.New(swiftExporterLog, "SwiftDiskUsage: ", log.Ldate|log.Ltime|log.Lshortfile)
+	//writeLogFile := log.New(swiftExporterLog, "SwiftDiskUsage: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	if SwiftDiskUsageEnable {
-		writeLogFile.Println("SwiftDiskUsage Module ENABLED")
+		//writeLogFile.Println("SwiftDiskUsage Module ENABLED")
 		swiftDrive, _ := disk.Partitions(false)
 		for i := 0; i < len(swiftDrive); i++ {
 			swiftDriveLabel := swiftDrive[i].Mountpoint
@@ -234,7 +231,7 @@ func SwiftDiskUsage(SwiftDiskUsageEnable bool) {
 		}
 
 	} else {
-		writeLogFile.Println("SwiftDiskUsage Module DISABLED")
+		//writeLogFile.Println("SwiftDiskUsage Module DISABLED")
 	}
 }
 
@@ -242,36 +239,35 @@ func SwiftDiskUsage(SwiftDiskUsageEnable bool) {
 // related metrics and expose them via Prometheus.
 func SwiftDriveIO(SwiftDriveIOEnable bool) {
 
-	writeLogFile := log.New(swiftExporterLog, "SwiftDriveIO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	//writeLogFile := log.New(swiftExporterLog, "SwiftDriveIO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	if SwiftDriveIOEnable {
-		writeLogFile.Println("SwiftDriveIO Module ENABLED")
+		//writeLogFile.Println("SwiftDriveIO Module ENABLED")
 
 		swiftDrive, _ := disk.Partitions(false)
 		swiftDiskIO, _ := disk.IOCounters()
-		nodeHostname, nodeUUID, _ := GetUUIDAndFQDN(ssnodeConfFile)
 
 		for i := 0; i < len(swiftDrive); i++ {
 			if strings.Contains(swiftDrive[i].Mountpoint, "/srv/node") {
 				deviceName := swiftDrive[i].Device
 				deviceName = strings.Split(deviceName, "/")[2]
 				deviceType := HddOrSSD(swiftDrive[i].Device)
-				swiftDriveIOStat.WithLabelValues(deviceName, "readCount", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].ReadCount))
-				swiftDriveIOStat.WithLabelValues(deviceName, "mergedReadCount", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].MergedReadCount))
-				swiftDriveIOStat.WithLabelValues(deviceName, "writeCount", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].WriteCount))
-				swiftDriveIOStat.WithLabelValues(deviceName, "mergedWriteCount", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].MergedWriteCount))
-				swiftDriveIOStat.WithLabelValues(deviceName, "readBytes", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].ReadBytes))
-				swiftDriveIOStat.WithLabelValues(deviceName, "writeBytes", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].WriteBytes))
-				swiftDriveIOStat.WithLabelValues(deviceName, "readTime", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].ReadTime))
-				swiftDriveIOStat.WithLabelValues(deviceName, "writeTime", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].WriteTime))
-				swiftDriveIOStat.WithLabelValues(deviceName, "iopsInProgress", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].IopsInProgress))
-				swiftDriveIOStat.WithLabelValues(deviceName, "ioTime", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].IoTime))
-				swiftDriveIOStat.WithLabelValues(deviceName, "weightedIO", deviceType, nodeHostname, nodeUUID).Set(float64(swiftDiskIO[deviceName].WeightedIO))
+				swiftDriveIOStat.WithLabelValues(deviceName, "readCount", deviceType).Set(float64(swiftDiskIO[deviceName].ReadCount))
+				swiftDriveIOStat.WithLabelValues(deviceName, "mergedReadCount", deviceType).Set(float64(swiftDiskIO[deviceName].MergedReadCount))
+				swiftDriveIOStat.WithLabelValues(deviceName, "writeCount", deviceType).Set(float64(swiftDiskIO[deviceName].WriteCount))
+				swiftDriveIOStat.WithLabelValues(deviceName, "mergedWriteCount", deviceType).Set(float64(swiftDiskIO[deviceName].MergedWriteCount))
+				swiftDriveIOStat.WithLabelValues(deviceName, "readBytes", deviceType).Set(float64(swiftDiskIO[deviceName].ReadBytes))
+				swiftDriveIOStat.WithLabelValues(deviceName, "writeBytes", deviceType).Set(float64(swiftDiskIO[deviceName].WriteBytes))
+				swiftDriveIOStat.WithLabelValues(deviceName, "readTime", deviceType).Set(float64(swiftDiskIO[deviceName].ReadTime))
+				swiftDriveIOStat.WithLabelValues(deviceName, "writeTime", deviceType).Set(float64(swiftDiskIO[deviceName].WriteTime))
+				swiftDriveIOStat.WithLabelValues(deviceName, "iopsInProgress", deviceType).Set(float64(swiftDiskIO[deviceName].IopsInProgress))
+				swiftDriveIOStat.WithLabelValues(deviceName, "ioTime", deviceType).Set(float64(swiftDiskIO[deviceName].IoTime))
+				swiftDriveIOStat.WithLabelValues(deviceName, "weightedIO", deviceType).Set(float64(swiftDiskIO[deviceName].WeightedIO))
 
 			}
 		}
 	} else {
-		writeLogFile.Println("SwiftDriveIO Module DISABLED")
+		//writeLogFile.Println("SwiftDriveIO Module DISABLED")
 	}
 }
 
@@ -295,7 +291,7 @@ func HddOrSSD(deviceName string) (driveType string) {
 	} else if strings.Compare(strings.TrimSuffix(string(data), "\n"), "0") == 0 {
 		typeOfDrive = "SSD"
 	} else {
-		fmt.Println(data)
+		//fmt.Println(data)
 	}
 
 	return typeOfDrive

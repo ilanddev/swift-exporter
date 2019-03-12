@@ -1,17 +1,9 @@
 package exporter
 
 import (
-	"bufio"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"os/exec"
 	"strings"
 )
-
-const ssnodeConfFile = "/etc/ssnode.conf"
 
 type formpostParameter struct {
 }
@@ -77,98 +69,15 @@ type NodeSwiftSetting struct {
 	TempURL          tempURLParameter        `json:"tempurl"`
 }
 
-// GetSwiftEnvironmentParameters - this function runs a curl call to http://<node_ipaddress>/info to get the
-// node parameter of the system. Environment variables like Swift version, S3 version...etc will be expose and
-// reference in other modules in the script.
-func GetSwiftEnvironmentParameters() (swiftEnvironmentParameters NodeSwiftSetting) {
-	apiIP, apiPort, apiHostname, _ := GetAPIAddress(ssnodeConfFile)
-	var targetEndpoint string
-	var read NodeSwiftSetting
-	var target []string
-
-	if len(apiHostname) != 0 {
-		target = []string{"http://", apiHostname}
-	} else if len(apiIP) != 0 {
-		target = []string{"http://", apiIP}
-	}
-
-	if apiPort == "443" {
-		target[0] = "https://"
-	}
-
-	target[0] = strings.Join(target, "")
-	target[1] = "/info"
-	targetEndpoint = strings.Join(target, "")
-
-	resp, err := http.Get(targetEndpoint)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Error here!!")
-	}
-
-	defer resp.Body.Close()
-
-	body, _ := ioutil.ReadAll(resp.Body)
-	err2 := json.Unmarshal(body, &read)
-
-	if err2 == nil {
-		fmt.Println(err2)
-		fmt.Println("ERROR")
-	}
-
-	swiftEnvironmentParameters = read
-	return swiftEnvironmentParameters
-}
-
-// GetAPIAddress reads the ssnode.conf file and get the API IP, API Port, and API Hostname inside the file.
-func GetAPIAddress(ssnodeConfig string) (apiAddress string, apiPort string, apiHostname string, err error) {
-
-	openFile, err := os.Open(ssnodeConfig)
-	if err != nil {
-		fmt.Println("I cannot read this file")
-	}
-	defer openFile.Close()
-
-	readFile := bufio.NewScanner(openFile)
-	for readFile.Scan() {
-		if strings.Contains(readFile.Text(), "api_ip") {
-			apiAddress = strings.TrimSpace(strings.Split(readFile.Text(), "=")[1])
-		}
-		if strings.Contains(readFile.Text(), "api_port") {
-			apiPort = strings.TrimSpace(strings.Split(readFile.Text(), "=")[1])
-		}
-		if strings.Contains(readFile.Text(), "api_hostname") {
-			apiHostname = strings.TrimSpace(strings.Split(readFile.Text(), "=")[1])
-		}
-	}
-
-	return apiAddress, apiPort, apiHostname, err
-}
-
 // GetUUIDAndFQDN runs "hostname -f" and reads the ssnode.conf to get the full FQDN and the UUID of a Swift node.
-func GetUUIDAndFQDN(ssnodeConfig string) (UUID string, FQDN string, err error) {
+func GetUUIDAndFQDN() (FQDN string, err error) {
 	// to get this module to run, please do he following:
 	// read /etc/ssnode.conf to get the UUID of the node
 	// run hostnamectl to get the FQDN of the node
 
-	var nodeUUID string
 	var hostName string
-
-	openFile, err := os.Open(ssnodeConfig)
-
-	if err != nil {
-		fmt.Println("I cannot read this file")
-	}
-	defer openFile.Close()
-
-	readFile := bufio.NewScanner(openFile)
-	for readFile.Scan() {
-		if strings.Contains(readFile.Text(), "node_uuid") {
-			nodeUUID = strings.TrimSpace(strings.Split(readFile.Text(), "=")[1])
-		}
-	}
 
 	runCommand, _ := exec.Command("hostname", "-f").Output()
 	hostName = strings.TrimRight(string(runCommand), "\n")
-	return hostName, nodeUUID, err
+	return hostName, err
 }
